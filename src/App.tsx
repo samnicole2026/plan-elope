@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { LandingPage } from './components/LandingPage';
 import { SignInModal } from './components/SignInModal';
 import { Sidebar } from './components/Sidebar';
+import { SplitScreenOnboarding } from './components/SplitScreenOnboarding';
 import { ChatInterface } from './components/ChatInterface';
 import { CalendarConnect } from './components/CalendarConnect';
 import { Calendar } from './components/Calendar';
@@ -12,7 +13,7 @@ import { AIAnalysis } from './components/AIAnalysis';
 import { Task, Goal, AIAnalysisResult, Category } from './types';
 import { defaultCategories } from './data/categories';
 
-type AppState = 'landing' | 'chat' | 'connect' | 'main';
+type AppState = 'landing' | 'onboarding' | 'chat' | 'connect' | 'main';
 
 interface User {
   name: string;
@@ -69,7 +70,7 @@ function App() {
       });
     }
     setShowSignInModal(false);
-    setAppState('main');
+    setAppState('onboarding');
   };
 
   const handleLogOut = () => {
@@ -146,12 +147,12 @@ function App() {
       date: new Date().toISOString(),
     };
     setChatSessions([newSession, ...chatSessions]);
-    setAppState('chat');
+    setAppState('onboarding');
   };
 
   const handleSelectChat = (chatId: string) => {
     console.log('Selected chat:', chatId);
-    setAppState('chat');
+    setAppState('onboarding');
   };
 
   const scheduledTasks = tasks.filter(t => t.date);
@@ -162,14 +163,17 @@ function App() {
       case 'landing':
         return <LandingPage onStartScheduling={handleStartScheduling} />;
       
+      case 'onboarding':
       case 'chat':
-        return <ChatInterface onClose={() => setAppState('main')} />;
-      
       case 'connect':
         return (
-          <CalendarConnect
-            onClose={() => setAppState('landing')}
-            onConnect={handleCalendarConnect}
+          <SplitScreenOnboarding
+            initialView={appState === 'chat' ? 'chat' : appState === 'connect' ? 'connect' : 'onboarding'}
+            onClose={() => setAppState('main')}
+            onChatWithPlanelope={() => setAppState('chat')}
+            onConnectCalendar={() => setAppState('connect')}
+            onInputCalendar={() => setAppState('main')}
+            categories={categories}
           />
         );
       
